@@ -55,7 +55,7 @@ isValid : Grid n -> Bool
 isValid g = rowsValid g && colsValid g && boxsValid g
 
 data Valid : Grid n -> Type where
-  IsValid : (g : Grid n) -> {auto prf : isValid g = True} -> Valid g
+  IsValid : {g : Grid n} -> (prf : isValid g = True) -> Valid g
 
 exampleValidGrid : Grid 4
 exampleValidGrid = MkGrid $ the (Vect (2*2) $ Vect (2*2) (Value (2*2))) $
@@ -72,16 +72,16 @@ exampleInvalidGrid = MkGrid $ the (Vect (2*2) $ Vect (2*2) (Value (2*2))) $
                           [Empty, Empty, Empty, Filled 2]]
 
 validPrf : Valid Sodoku.exampleValidGrid
-validPrf = IsValid exampleValidGrid
+validPrf = IsValid Refl
 
 invalidPrf : (contra : Valid Sodoku.exampleInvalidGrid) -> Void
-invalidPrf (IsValid exampleInvalidGrid) impossible
+invalidPrf (IsValid Refl) impossible
 
-isSolved : Grid n -> {auto prf : Valid g} -> Bool
+isSolved : (g : Grid n) -> {auto valid : Valid g} -> Bool
 isSolved (MkGrid xs) = all (all (/= Empty)) xs
 
-data Solved : Grid n -> Type where
-  IsSolved : (g : Grid n) -> {auto valid : Valid g} -> {auto solved : isSolved g {prf=valid} = True} -> Solved g
+data Solved :  (g : Grid n) -> {auto valid : Valid g} -> Type where
+  IsSolved : {auto valid : Valid g} -> (solved : isSolved g {valid} = True) -> Solved g {valid}
 
 exampleSolved : Grid 1
 exampleSolved = MkGrid $ the (Vect (1*1) $ Vect (1*1) (Value (1*1))) $
@@ -92,7 +92,27 @@ exampleNotSolved = MkGrid $ the (Vect (1*1) $ Vect (1*1) (Value (1*1))) $
                          [[Empty]]
 
 solvedPrf : Solved Sodoku.exampleSolved
-solvedPrf = IsSolved {valid=IsValid _} exampleSolved
+solvedPrf = IsSolved Refl
 
 notSolvedPrf : Solved Sodoku.exampleNotSolved -> Void
-notSolvedPrf (IsSolved exampleNotSolved) impossible
+notSolvedPrf (IsSolved Refl) impossible
+
+generateCases : (g : Grid n) -> {auto prf : Valid g} -> Lazy (List (g : (Grid n) ** Valid g))
+generateCases g = ?a
+
+notSolved : {valid : Valid g} -> (contra : isSolved g {valid} = True -> Void) -> Solved g {valid} -> Void
+notSolved contra (IsSolved solved) = contra solved
+
+decSolved : (g : Grid n) -> {auto prf : Valid g} -> Dec (Solved g)
+decSolved g = case decEq (isSolved g) True of
+                   Yes prf => Yes $ IsSolved prf
+                   No contra => No $ notSolved contra
+
+filterSolved : List (g : (Grid n) ** Valid g) -> List (g : (Grid n) ** (valid : Valid g ** Solved g))
+filterSolved [] = []
+filterSolved ((g ** valid) :: xs) = case decSolved g of
+                                         (Yes prf) => (g ** valid ** prf) :: filterSolved xs
+                                         (No contra) => filterSolved xs
+
+solve : (g : Grid n) -> {auto prf : Valid g} -> List (g' : (Grid n) ** (valid : Valid g' ** Solved g'))
+solve g = filterSolved $ generateCases g
