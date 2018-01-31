@@ -12,17 +12,11 @@ Eq (Value n) where
   (==) (Filled x) Empty = False
   (==) (Filled x) (Filled y) = x == y
 
-data Row : Nat -> a -> Type where
-  MkRow : (n : Nat) -> Vect (n*n) a -> Row (n*n) a
-
 data Grid : (n : Nat) -> Type where
   MkGrid : Vect (n*n) (Vect (n*n) (Value (n*n))) -> Grid (n*n)
 
 blank : (n : Nat) -> Grid (n*n)
 blank n = MkGrid (replicate (n*n) (replicate (n*n) Empty))
-
-rows : Grid n -> Grid n
-rows = id
 
 nodups : Eq a => List a -> Bool
 nodups [] = True
@@ -31,25 +25,25 @@ nodups (x :: xs) = (not $ elem x xs) && nodups xs
 rowsValid : Grid n -> Bool
 rowsValid (MkGrid xs) = all (nodups . filter (/= Empty) . toList) xs
 
-cols : Grid n -> Grid n
-cols (MkGrid xs) = MkGrid (transpose xs)
+colsToRows : Grid n -> Grid n
+colsToRows (MkGrid xs) = MkGrid (transpose xs)
 
 colsValid : Grid n -> Bool
-colsValid = rowsValid . cols
+colsValid = rowsValid . colsToRows
 
 splitUp : Vect (m*n) a -> Vect m (Vect n a)
 splitUp xs {n = n} {m = Z} = []
 splitUp xs {n = n} {m = (S k)} = take n xs :: splitUp (drop n xs)
 
-boxs : Grid n -> Grid n
-boxs (MkGrid xs) {n=m*m} = MkGrid $
+boxsToRows : Grid n -> Grid n
+boxsToRows (MkGrid xs) = MkGrid $
   (map Vect.concat . Vect.concat . --Combine back into n*n
    map transpose .                 --Transpose the boxes and rows
    splitUp . map splitUp)          --Split into m*m*m*m
-   xs
+  xs
 
 boxsValid : Grid n -> Bool
-boxsValid = rowsValid . boxs
+boxsValid = rowsValid . boxsToRows
 
 isValid : Grid n -> Bool
 isValid g = rowsValid g && colsValid g && boxsValid g
