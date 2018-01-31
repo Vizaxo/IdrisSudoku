@@ -77,11 +77,11 @@ validPrf = IsValid exampleValidGrid
 invalidPrf : (contra : Valid Sodoku.exampleInvalidGrid) -> Void
 invalidPrf (IsValid exampleInvalidGrid) impossible
 
-isSolved : Grid n -> {auto prf : isValid g = True} -> Bool
+isSolved : Grid n -> {auto prf : Valid g} -> Bool
 isSolved (MkGrid xs) = all (all (/= Empty)) xs
 
 data Solved : Grid n -> Type where
-  IsSolved : (g : Grid n) -> {auto valid : isValid g = True} -> {auto solved : isSolved g {prf=valid} = True} -> Solved g
+  IsSolved : (g : Grid n) -> {auto valid : Valid g} -> {auto solved : isSolved g {prf=valid} = True} -> Solved g
 
 exampleSolved : Grid 1
 exampleSolved = MkGrid $ the (Vect (1*1) $ Vect (1*1) (Value (1*1))) $
@@ -92,7 +92,7 @@ exampleNotSolved = MkGrid $ the (Vect (1*1) $ Vect (1*1) (Value (1*1))) $
                          [[Empty]]
 
 solvedPrf : Solved Sodoku.exampleSolved
-solvedPrf = IsSolved exampleSolved
+solvedPrf = IsSolved {valid=IsValid _} exampleSolved
 
 notSolvedPrf : Solved Sodoku.exampleNotSolved -> Void
 notSolvedPrf (IsSolved exampleNotSolved) impossible
