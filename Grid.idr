@@ -16,6 +16,23 @@ Eq (Value n) where
   (==) (Filled x) Empty = False
   (==) (Filled x) (Filled y) = x == y
 
+Uninhabited (Empty = Filled _) where
+  uninhabited Refl impossible
+
+Uninhabited (Filled _ = Empty) where
+  uninhabited Refl impossible
+
+negCong : (contra : (x = y) -> Void) -> (Filled x = Filled y) -> Void
+negCong contra Refl = contra Refl
+
+DecEq (Value n) where
+  decEq Empty Empty = Yes Refl
+  decEq Empty (Filled x) = No uninhabited
+  decEq (Filled x) Empty = No uninhabited
+  decEq (Filled x) (Filled y) = case decEq x y of
+                                     Yes prf => Yes (rewrite prf in Refl)
+                                     No contra => No (negCong contra)
+
 data Grid : (n : Nat) -> Type where
   MkGrid : Vect (n*n) (Vect (n*n) (Value (n*n))) -> Grid (n*n)
 

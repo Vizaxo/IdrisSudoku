@@ -41,14 +41,6 @@ tryValues : Value n -> List (Value n)
 tryValues Empty {n} = map Filled setOfFin
 tryValues (Filled x) = [Filled x]
 
-notValid : (contra : isValid g = True -> Void) -> Valid g  -> Void
-notValid contra (IsValid solved) = contra solved
-
-decValid : (g : Grid n) -> Dec (Valid g)
-decValid g = case decEq (isValid g) True of
-                   Yes prf => Yes $ IsValid prf
-                   No contra => No $ notValid contra
-
 filterValid : List (Grid n) -> List (g : (Grid n) ** Valid g)
 filterValid [] = []
 filterValid (g :: xs) = case decValid g of
