@@ -22,10 +22,6 @@ exampleValidGrid = MkGrid $ the (Vect (2*2) $ Vect (2*2) (Value (2*2))) $
                           [Filled 1, Empty, Empty, Empty],
                           [Empty, Empty, Empty, Filled 2]]
 
-  {-
-validPrf : ()
-validPrf = findValidPrf exampleValidGrid {prf=?a}
-  -}
 
 blankPrf : Valid (blank 2)
 blankPrf = findValidPrf
@@ -51,12 +47,20 @@ validSolved = IsValid (ValidRow (ThisValue uninhabited EmptyList) ValidEmpty)
         (BoxsValid (ValidRow (ThisValue uninhabited EmptyList)
                              ValidEmpty))
 
-solvedPrf : Solved ProofExamples.exampleSolved {valid=ProofExamples.validSolved}
-solvedPrf = IsSolved Refl
-
 exampleNotSolved : Grid 1
 exampleNotSolved = MkGrid $ the (Vect (1*1) $ Vect (1*1) (Value (1*1))) $
                          [[Empty]]
 
-notSolvedPrf : Solved ProofExamples.exampleNotSolved -> Void
-notSolvedPrf (IsSolved Refl) impossible
+singleEmpty : Grid 4
+singleEmpty = MkGrid $ the (Vect (2*2) $ Vect (2*2) (Value (2*2))) $
+                         [[Empty, Filled 1, Filled 2, Filled 3],
+                          [Filled 2, Filled 3, Filled 0, Filled 1],
+                          [Filled 1, Filled 2, Filled 3, Filled 0],
+                          [Filled 3, Filled 0, Filled 1, Filled 2]]
+
+almostSolved : Grid 4
+almostSolved = MkGrid $ the (Vect (2*2) $ Vect (2*2) (Value (2*2))) $
+                         [[Empty, Filled 1, Empty, Filled 3],
+                          [Empty, Empty, Empty, Empty],
+                          [Filled 1, Empty, Empty, Empty],
+                          [Empty, Filled 0, Filled 1, Filled 2]]

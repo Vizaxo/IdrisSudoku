@@ -65,21 +65,8 @@ validInvalidRowsInverse (ThisRowInvalid prf) (NotInvalidRow contra induction) = 
 validInvalidRowsInverse (ThatRowInvalid prf) (ValidRow x induction) = validInvalidRowsInverse prf induction
 validInvalidRowsInverse (ThatRowInvalid prf) (NotInvalidRow contra induction) = validInvalidRowsInverse prf induction
 
-cols : Vect n (Vect m a) -> Vect m (Vect n a)
-cols = transpose
-
 data ValidCols : Vect n (Vect m a) -> Type where
   ColsValid : (prf : ValidRows (cols g)) -> ValidCols g
-
-splitUp : Vect (m*n) a -> Vect m (Vect n a)
-splitUp xs {n = n} {m = Z} = []
-splitUp xs {n = n} {m = (S k)} = take n xs :: splitUp (drop n xs)
-
-boxs : Vect (n*n) (Vect (n*n) a) -> Vect (n*n) (Vect (n*n) a)
-boxs xs = ( map Vect.concat . Vect.concat --Combine back into n*n
-          . map cols                      --Cols the boxes and rows
-          . splitUp . map splitUp)        --Split into m*m*m*m
-          xs
 
 data ValidBoxs : Vect (n*n) (Vect (n*n) a) -> Type where
   BoxsValid : (prf : ValidRows (boxs g)) -> ValidBoxs g

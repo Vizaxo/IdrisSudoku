@@ -48,3 +48,19 @@ Show (Grid n) where
 
 blank : (n : Nat) -> Grid (n*n)
 blank n = MkGrid (replicate (n*n) (replicate (n*n) Empty))
+
+rows : a -> a
+rows = id
+
+cols : Vect n (Vect m a) -> Vect m (Vect n a)
+cols = transpose
+
+splitUp : Vect (m*n) a -> Vect m (Vect n a)
+splitUp xs {n = n} {m = Z} = []
+splitUp xs {n = n} {m = (S k)} = take n xs :: splitUp (drop n xs)
+
+boxs : Vect (n*n) (Vect (n*n) a) -> Vect (n*n) (Vect (n*n) a)
+boxs xs = ( map Vect.concat . Vect.concat --Combine back into n*n
+          . map cols                      --Cols the boxes and rows
+          . splitUp . map splitUp)        --Split into m*m*m*m
+          xs
